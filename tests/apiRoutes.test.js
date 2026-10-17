@@ -52,6 +52,7 @@ describe('API Routes — Health & System Configuration', () => {
     assert.equal(res.status, 200);
     const data = await res.json();
     assert.equal(data.status, 'ok');
+    assert.equal(data.ok, true);
     assert.ok(data.uptimeSeconds >= 0);
     assert.ok(data.appName);
     assert.ok(data.timestamp);

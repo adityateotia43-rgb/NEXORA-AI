@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const express = require('express');
 const { providerManager } = require('./providers');
 const RateLimiter = require('./middleware/rateLimiter');
 const { parseJsonBody, validateChatInput } = require('./middleware/validator');
@@ -138,8 +139,6 @@ const rateLimiter = new RateLimiter({
   windowMs: config.rateLimitWindowMs
 });
 
-const PUBLIC_DIR = __dirname;
-
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -154,11 +153,36 @@ const MIME_TYPES = {
   '.webp': 'image/webp',
 };
 
+// Helper to locate static files across root (__dirname), process.cwd(), and dist/
+function resolveStaticFile(relPath) {
+  if (!relPath) return null;
+  const cleanRelative = relPath.replace(/^\/+/, '');
+  if (cleanRelative.includes('..')) return null;
+
+  const candidates = [
+    path.join(__dirname, cleanRelative),
+    path.join(process.cwd(), cleanRelative),
+    path.join(__dirname, 'dist', cleanRelative),
+    path.join(process.cwd(), 'dist', cleanRelative)
+  ];
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      try {
+        const stat = fs.statSync(candidate);
+        if (stat.isFile()) return candidate;
+      } catch (e) {}
+    }
+  }
+  return null;
+}
+
 // ===================================================
 // 3. HTTP SERVER & REST / STREAMING API ROUTES
 // ===================================================
-async function app(req, res) {
-  // CORS Headers
+const expressApp = express();
+
+// A. CORS & Preflight middleware for all incoming requests
+expressApp.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', config.corsOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
@@ -169,7 +193,29 @@ async function app(req, res) {
     res.end();
     return;
   }
+  next();
+});
 
+// B. Explicit handler for GET / to serve index.html
+expressApp.get('/', (req, res) => {
+  const target = resolveStaticFile('index.html');
+  if (target) {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    fs.createReadStream(target).pipe(res);
+  } else {
+    res.statusCode = 404;
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.end('404 Not Found');
+  }
+});
+
+// C. Serve static assets via express.static from root (__dirname) and dist/
+expressApp.use(express.static(path.join(__dirname), { index: 'index.html' }));
+expressApp.use(express.static(path.join(__dirname, 'dist'), { index: 'index.html' }));
+
+// D. API Routes & Dynamic Request Handler
+expressApp.use(async (req, res) => {
   const [reqPath] = req.url.split('?');
   const decodedPath = decodeURI(reqPath);
 
@@ -574,6 +620,7 @@ async function app(req, res) {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
       res.end(JSON.stringify({
+        ok: true,
         status: 'ok',
         uptimeSeconds: Math.floor(process.uptime()),
         timestamp: new Date().toISOString(),
@@ -597,37 +644,39 @@ async function app(req, res) {
     }
 
     // -------------------------------------------------
-    // Static Files Handler
+    // Static Files Fallback Handler
     // -------------------------------------------------
-    let filePath = path.join(PUBLIC_DIR, decodedPath === '/' ? '/index.html' : decodedPath);
-
-    // Prevent directory traversal vulnerabilities
-    if (!filePath.startsWith(PUBLIC_DIR)) {
+    if (decodedPath.includes('..')) {
       res.statusCode = 403;
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
       res.end('403 Forbidden');
       return;
     }
 
-    fs.stat(filePath, (err, stats) => {
-      if (err || !stats.isFile()) {
-        res.statusCode = 404;
-        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        res.end('404 Not Found');
-        return;
-      }
+    const cleanPath = decodedPath === '/' ? 'index.html' : decodedPath;
+    const targetFile = resolveStaticFile(cleanPath);
 
-      const ext = path.extname(filePath).toLowerCase();
-      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+    if (!targetFile) {
+      res.statusCode = 404;
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.end('404 Not Found');
+      return;
+    }
 
-      res.statusCode = 200;
-      res.setHeader('Content-Type', contentType);
-      fs.createReadStream(filePath).pipe(res);
-    });
+    const ext = path.extname(targetFile).toLowerCase();
+    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+
+    res.statusCode = 200;
+    res.setHeader('Content-Type', contentType);
+    fs.createReadStream(targetFile).pipe(res);
 
   } catch (err) {
     sendErrorResponse(res, err, config);
   }
+});
+
+function app(req, res, next) {
+  return expressApp(req, res, next);
 }
 
 const server = http.createServer(app);
