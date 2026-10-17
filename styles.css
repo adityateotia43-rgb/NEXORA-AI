@@ -1,0 +1,337 @@
+/* NEXORA AI - Modern Design System & Custom Styles */
+
+/* 1. Theme Color Variables (Light & Dark) */
+:root {
+  --bg-page: #f6f7fb;
+  --bg-surface: #ffffff;
+  --bg-container: #eff2f8;
+  --bg-container-low: #f8fafc;
+  --bg-container-high: #e5e8f2;
+  --bg-container-highest: #dbe0ed;
+  --bg-container-lowest: #ffffff;
+  --text-main: #181a20;
+  --text-variant: #4b4f5e;
+  --text-outline: #777c8e;
+  --primary: #6d3bd7;
+  --primary-container: #7d44ec;
+  --on-primary: #ffffff;
+  --on-primary-container: #ffffff;
+  --secondary: #0077a8;
+  --tertiary: #5d3bb0;
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-card: rgba(109, 59, 215, 0.12);
+  --shadow-glow: rgba(109, 59, 215, 0.2);
+}
+
+html.dark {
+  --bg-page: #0d0e12;
+  --bg-surface: #121317;
+  --bg-container: #1e1f24;
+  --bg-container-low: #1a1b20;
+  --bg-container-high: #292a2e;
+  --bg-container-highest: #343439;
+  --bg-container-lowest: #0d0e12;
+  --text-main: #e3e2e8;
+  --text-variant: #cbc3d7;
+  --text-outline: #958ea0;
+  --primary: #d0bcff;
+  --primary-container: #a078ff;
+  --on-primary: #3c0091;
+  --on-primary-container: #340080;
+  --secondary: #7bd0ff;
+  --tertiary: #cebdff;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-card: rgba(208, 188, 255, 0.12);
+  --shadow-glow: rgba(160, 120, 255, 0.4);
+}
+
+/* Smooth Theme Transitions */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 3D Flip Card System */
+.flip-card-perspective {
+  perspective: 1000px;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.flip-card-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  top: 0;
+  left: 0;
+  border-radius: 0.75rem;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+}
+
+/* Custom Scrollbars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--bg-container);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--text-outline);
+  opacity: 0.4;
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Glowing Ambient Pulses */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(1.08);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 6s ease-in-out infinite;
+}
+
+/* Audio Visualizer Waves */
+@keyframes soundWave {
+  0%, 100% {
+    height: 4px;
+  }
+  50% {
+    height: 24px;
+  }
+}
+
+.sound-bar {
+  display: inline-block;
+  width: 3px;
+  border-radius: 9999px;
+  background-color: var(--secondary);
+  animation: soundWave 1.2s ease-in-out infinite;
+}
+
+.sound-bar:nth-child(2) { animation-delay: 0.2s; }
+.sound-bar:nth-child(3) { animation-delay: 0.4s; }
+.sound-bar:nth-child(4) { animation-delay: 0.1s; }
+.sound-bar:nth-child(5) { animation-delay: 0.35s; }
+
+/* Typing Cursor */
+@keyframes blinkCursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.typing-cursor::after {
+  content: '▋';
+  color: var(--primary);
+  animation: blinkCursor 0.8s infinite;
+  margin-left: 2px;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+}
+
+.glass-modal {
+  background: var(--bg-surface);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-card);
+}
+
+/* Modal Slide Animations */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+/* Sidebar Drawer Slide */
+@keyframes drawerSlide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-drawer-slide {
+  animation: drawerSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Music Flow Animations */
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 8s linear infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(0, 166, 224, 0.4), 0 0 30px rgba(160, 120, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(0, 166, 224, 0.7), 0 0 48px rgba(160, 120, 255, 0.4);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+/* 4. Skeleton Loading Shimmer System */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-container-high) 25%,
+    var(--bg-container-highest) 37%,
+    var(--bg-container-high) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
+.skeleton-text {
+  height: 0.875rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.skeleton-circle {
+  border-radius: 9999px;
+}
+
+/* 5. Empty State Gentle Floating */
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-float {
+  animation: floatGentle 3s ease-in-out infinite;
+}
+
+/* 6. Error Boundary Notification Styling */
+.error-boundary-banner {
+  border-left: 4px solid #ff5449;
+  background: var(--bg-surface);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* 7. Responsive Mobile Touch Utilities */
+.scroll-touch {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+@media (max-width: 640px) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* 8. Network Offline / Online Badge Pulse */
+@keyframes pulseBadge {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.96); }
+}
+
+.animate-pulse-badge {
+  animation: pulseBadge 2s ease-in-out infinite;
+}
+
+/* 9. Mobile Responsive Guardrails & Viewport Safety */
+img, video, canvas {
+  max-width: 100%;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.5rem);
+  }
+  .pt-safe {
+    padding-top: max(env(safe-area-inset-top, 0px), 0.25rem);
+  }
+}
+

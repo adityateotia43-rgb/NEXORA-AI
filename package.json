@@ -1,0 +1,23 @@
+{
+  "name": "ai-agent-website",
+  "version": "1.0.0",
+  "description": "NEXORA AI Web App",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --test tests/**/*.test.js",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit",
+    "build": "npm run type-check && npm run lint && node scripts/build.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0",
+    "typescript": "^7.0.2"
+  }
+}
