@@ -43,6 +43,7 @@ function parseEnvFile(filePath) {
 }
 
 function loadEnvironmentVariables() {
+  if (process.env.VERCEL) return;
   const envPath = path.join(__dirname, '.env');
   const envExamplePath = path.join(__dirname, '.env.example');
 
@@ -73,7 +74,7 @@ loadEnvironmentVariables();
 // ===================================================
 const config = {
   port: parseInt(process.env.PORT, 10) || 3000,
-  host: process.env.HOST || 'localhost',
+  host: process.env.HOST || '0.0.0.0',
   nodeEnv: process.env.NODE_ENV || 'development',
   appName: process.env.APP_NAME || 'NEXORA AI',
   appVersion: process.env.APP_VERSION || 'v2.4',
@@ -156,7 +157,7 @@ const MIME_TYPES = {
 // ===================================================
 // 3. HTTP SERVER & REST / STREAMING API ROUTES
 // ===================================================
-const server = http.createServer(async (req, res) => {
+async function app(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', config.corsOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -627,7 +628,9 @@ const server = http.createServer(async (req, res) => {
   } catch (err) {
     sendErrorResponse(res, err, config);
   }
-});
+}
+
+const server = http.createServer(app);
 
 // ===================================================
 // 4. PROCESS SAFETY & UNHANDLED ERROR HANDLERS
@@ -666,14 +669,22 @@ function startServer(port = config.port, host = config.host) {
   });
 }
 
-if (require.main === module) {
-  startServer(config.port, config.host);
+// Express/Serverless compatibility helpers attached to app
+app.listen = (...args) => server.listen(...args);
+app.server = server;
+app.config = config;
+app.rateLimiter = rateLimiter;
+app.startServer = startServer;
+
+// Start HTTP server only when running locally (not on Vercel serverless)
+if (!process.env.VERCEL) {
+  if (require.main === module) {
+    startServer(config.port, config.host);
+  }
 }
 
-module.exports = {
-  server,
-  config,
-  rateLimiter,
-  startServer
-};
+// Export app for Vercel Serverless Functions and backwards-compatible test imports
+module.exports = app;
+
+
 
